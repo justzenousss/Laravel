@@ -1,0 +1,15 @@
+<?php
+
+namespace App\Models;
+
+class Student
+{
+    public static function all()
+    {
+        return [
+            ['id' => 1, 'name' => 'Nguyen Van A', 'email' => 'a@gmail.com'],
+            ['id' => 2, 'name' => 'Tran Thi B', 'email' => 'b@gmail.com'],
+            ['id' => 3, 'name' => 'Le Van C', 'email' => 'c@gmail.com'],
+        ];
+    }
+}
