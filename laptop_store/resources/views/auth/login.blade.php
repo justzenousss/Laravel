@@ -1,47 +1,74 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <div class="text-center mb-4">
+        <h4 class="fw-bold mb-2">Đăng nhập</h4>
+        <p class="text-muted mb-0">Nhập thông tin tài khoản của bạn</p>
+    </div>
+
+    @if (session('status'))
+        <div class="alert alert-success">
+            {{ session('status') }}
+        </div>
+    @endif
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input
+                id="email"
+                type="email"
+                name="email"
+                value="{{ old('email') }}"
+                class="form-control @error('email') is-invalid @enderror"
+                required
+                autofocus
+                autocomplete="username"
+            >
+            @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="mb-3">
+            <label for="password" class="form-label">Mật khẩu</label>
+            <input
+                id="password"
+                type="password"
+                name="password"
+                class="form-control @error('password') is-invalid @enderror"
+                required
+                autocomplete="current-password"
+            >
+            @error('password')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="remember" id="remember_me">
+                <label class="form-check-label" for="remember_me">
+                    Ghi nhớ đăng nhập
+                </label>
+            </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a href="{{ route('password.request') }}" class="text-decoration-none">
+                    Quên mật khẩu?
                 </a>
             @endif
+        </div>
 
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+        <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-dark btn-lg">
+                Đăng nhập
+            </button>
+        </div>
+
+        <div class="text-center">
+            <span class="text-muted">Chưa có tài khoản?</span>
+            <a href="{{ route('register') }}" class="text-decoration-none fw-semibold">Đăng ký ngay</a>
         </div>
     </form>
 </x-guest-layout>

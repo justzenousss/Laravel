@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Website bán laptop</title>
+    <title>@yield('title', 'Website bán laptop')</title>
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
     <style>
+        html, body {
+            height: 100%;
+        }
+
         body {
             background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
         }
 
         .navbar-brand {
@@ -90,9 +98,19 @@
             font-weight: 700;
             margin-bottom: 25px;
         }
+
+        .cart-badge {
+            font-size: 12px;
+        }
     </style>
+
+    @stack('styles')
 </head>
 <body>
+
+@php
+    $cartCount = collect(session('cart', []))->sum('quantity');
+@endphp
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container">
@@ -115,11 +133,28 @@
             </ul>
 
             <form action="{{ route('products.index') }}" method="GET" class="d-flex me-3">
-                <input type="text" name="keyword" class="form-control me-2" placeholder="Tìm laptop...">
-                <button class="btn btn-outline-light">Tìm</button>
+                <input
+                    type="text"
+                    name="keyword"
+                    class="form-control me-2"
+                    placeholder="Tìm laptop..."
+                    value="{{ request('keyword') }}"
+                >
+                <button class="btn btn-outline-light" type="submit">Tìm</button>
             </form>
 
             <ul class="navbar-nav align-items-center">
+                <li class="nav-item me-2">
+                    <a href="{{ route('cart.index') }}" class="btn btn-outline-light position-relative">
+                        <i class="bi bi-cart3"></i> Giỏ hàng
+                        @if($cartCount > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark cart-badge">
+                                {{ $cartCount }}
+                            </span>
+                        @endif
+                    </a>
+                </li>
+
                 @auth
                     @if(auth()->user()->role === 'admin')
                         <li class="nav-item me-2">
@@ -160,21 +195,25 @@
 
 @if(session('success'))
     <div class="container mt-3">
-        <div class="alert alert-success">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     </div>
 @endif
 
 @if(session('error'))
     <div class="container mt-3">
-        <div class="alert alert-danger">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
             {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     </div>
 @endif
 
-@yield('content')
+<main>
+    @yield('content')
+</main>
 
 <footer>
     <div class="container text-center">
@@ -184,5 +223,6 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@stack('scripts')
 </body>
 </html>
