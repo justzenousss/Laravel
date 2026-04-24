@@ -4,7 +4,7 @@
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('home') }}">
-                        <span class="font-bold text-xl">Laptop Store</span>
+                        <span class="font-bold text-xl">Phone Store</span>
                     </a>
                 </div>
 
@@ -57,9 +57,9 @@
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-black">Đăng nhập</a>
-                        <a href="{{ route('register') }}" class="text-sm text-gray-700 hover:text-black">Đăng ký</a>
+                    <div class="space-x-3">
+                        <a href="{{ route('login') }}" class="text-sm text-gray-700 underline">Đăng nhập</a>
+                        <a href="{{ route('register') }}" class="text-sm text-gray-700 underline">Đăng ký</a>
                     </div>
                 @endauth
             </div>
@@ -80,11 +80,9 @@
             <x-responsive-nav-link :href="route('home')" :active="request()->routeIs('home')">
                 Trang chủ
             </x-responsive-nav-link>
-
             <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
                 Sản phẩm
             </x-responsive-nav-link>
-
             @auth
                 @if(Auth::user()->role === 'admin')
                     <x-responsive-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">
@@ -94,8 +92,8 @@
             @endauth
         </div>
 
-        @auth
-            <div class="pt-4 pb-1 border-t border-gray-200">
+        <div class="pt-4 pb-1 border-t border-gray-200">
+            @auth
                 <div class="px-4">
                     <div class="font-medium text-base text-gray-800">{{ Auth::user()->name }}</div>
                     <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
@@ -114,14 +112,12 @@
                         </x-responsive-nav-link>
                     </form>
                 </div>
-            </div>
-        @else
-            <div class="pt-4 pb-1 border-t border-gray-200">
-                <div class="px-4 flex flex-col gap-2">
-                    <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-black">Đăng nhập</a>
-                    <a href="{{ route('register') }}" class="text-sm text-gray-700 hover:text-black">Đăng ký</a>
+            @else
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link :href="route('login')">Đăng nhập</x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('register')">Đăng ký</x-responsive-nav-link>
                 </div>
-            </div>
-        @endauth
+            @endauth
+        </div>
     </div>
 </nav>

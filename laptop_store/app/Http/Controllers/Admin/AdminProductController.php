@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -13,7 +14,7 @@ class AdminProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('brand');
+        $query = Product::with(['brand', 'images']);
 
         if ($request->filled('keyword')) {
             $query->where('name', 'like', '%' . $request->keyword . '%');
@@ -45,6 +46,8 @@ class AdminProductController extends Controller
             'old_price' => ['nullable', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'images' => ['nullable', 'array', 'max:3'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
             'cpu' => ['nullable', 'string', 'max:255'],
             'ram' => ['nullable', 'string', 'max:255'],
             'storage' => ['nullable', 'string', 'max:255'],
@@ -60,21 +63,39 @@ class AdminProductController extends Controller
             'name.required' => 'Vui lòng nhập tên sản phẩm.',
             'price.required' => 'Vui lòng nhập giá bán.',
             'quantity.required' => 'Vui lòng nhập số lượng.',
-            'image.image' => 'File tải lên phải là hình ảnh.',
+            'image.image' => 'Ảnh chính phải là hình ảnh hợp lệ.',
+            'images.array' => 'Ảnh phụ không hợp lệ.',
+            'images.max' => 'Chỉ được tải tối đa 3 ảnh phụ.',
+            'images.*.image' => 'Mỗi ảnh phụ phải là hình ảnh hợp lệ.',
         ]);
 
         $validated['slug'] = $this->generateUniqueSlug($validated['name']);
         $validated['is_featured'] = $request->boolean('is_featured');
 
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
-        }
-
-        if (isset($validated['old_price']) && $validated['old_price'] === null) {
+        if (array_key_exists('old_price', $validated) && $validated['old_price'] === null) {
             unset($validated['old_price']);
         }
 
-        Product::create($validated);
+        DB::transaction(function () use ($request, $validated) {
+            $productData = $validated;
+
+            if ($request->hasFile('image')) {
+                $productData['image'] = $request->file('image')->store('products', 'public');
+            }
+
+            $product = Product::create($productData);
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $index => $imageFile) {
+                    $path = $imageFile->store('products/gallery', 'public');
+
+                    $product->images()->create([
+                        'image' => $path,
+                        'sort_order' => $index + 1,
+                    ]);
+                }
+            }
+        });
 
         return redirect()
             ->route('admin.products.index')
@@ -88,7 +109,7 @@ class AdminProductController extends Controller
 
     public function edit(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('images')->findOrFail($id);
         $brands = Brand::orderBy('name')->get();
 
         return view('admin.products.edit', compact('product', 'brands'));
@@ -96,7 +117,7 @@ class AdminProductController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('images')->findOrFail($id);
 
         $validated = $request->validate([
             'brand_id' => ['required', 'exists:brands,id'],
@@ -105,6 +126,9 @@ class AdminProductController extends Controller
             'old_price' => ['nullable', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'images' => ['nullable', 'array', 'max:3'],
+            'images.*' => ['image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'remove_gallery' => ['nullable', 'boolean'],
             'cpu' => ['nullable', 'string', 'max:255'],
             'ram' => ['nullable', 'string', 'max:255'],
             'storage' => ['nullable', 'string', 'max:255'],
@@ -114,24 +138,55 @@ class AdminProductController extends Controller
             'weight' => ['nullable', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
             'is_featured' => ['nullable', 'boolean'],
+        ], [
+            'images.max' => 'Chỉ được tải tối đa 3 ảnh phụ.',
+            'images.*.image' => 'Mỗi ảnh phụ phải là hình ảnh hợp lệ.',
         ]);
 
         $validated['slug'] = $this->generateUniqueSlug($validated['name'], $product->id);
         $validated['is_featured'] = $request->boolean('is_featured');
 
-        if ($request->hasFile('image')) {
-            if ($product->image && Storage::disk('public')->exists($product->image)) {
-                Storage::disk('public')->delete($product->image);
-            }
-
-            $validated['image'] = $request->file('image')->store('products', 'public');
-        }
-
-        if (isset($validated['old_price']) && $validated['old_price'] === null) {
+        if (array_key_exists('old_price', $validated) && $validated['old_price'] === null) {
             $validated['old_price'] = null;
         }
 
-        $product->update($validated);
+        DB::transaction(function () use ($request, $product, $validated) {
+            $productData = $validated;
+            unset($productData['images'], $productData['remove_gallery']);
+
+            if ($request->hasFile('image')) {
+                if ($product->image && Storage::disk('public')->exists($product->image)) {
+                    Storage::disk('public')->delete($product->image);
+                }
+
+                $productData['image'] = $request->file('image')->store('products', 'public');
+            }
+
+            $product->update($productData);
+
+            $shouldReplaceGallery = $request->hasFile('images') || $request->boolean('remove_gallery');
+
+            if ($shouldReplaceGallery) {
+                foreach ($product->images as $galleryImage) {
+                    if ($galleryImage->image && Storage::disk('public')->exists($galleryImage->image)) {
+                        Storage::disk('public')->delete($galleryImage->image);
+                    }
+                }
+
+                $product->images()->delete();
+
+                if ($request->hasFile('images')) {
+                    foreach ($request->file('images') as $index => $imageFile) {
+                        $path = $imageFile->store('products/gallery', 'public');
+
+                        $product->images()->create([
+                            'image' => $path,
+                            'sort_order' => $index + 1,
+                        ]);
+                    }
+                }
+            }
+        });
 
         return redirect()
             ->route('admin.products.index')
@@ -140,10 +195,16 @@ class AdminProductController extends Controller
 
     public function destroy(string $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('images')->findOrFail($id);
 
         if ($product->image && Storage::disk('public')->exists($product->image)) {
             Storage::disk('public')->delete($product->image);
+        }
+
+        foreach ($product->images as $galleryImage) {
+            if ($galleryImage->image && Storage::disk('public')->exists($galleryImage->image)) {
+                Storage::disk('public')->delete($galleryImage->image);
+            }
         }
 
         $product->delete();
@@ -156,7 +217,7 @@ class AdminProductController extends Controller
     private function generateUniqueSlug(string $name, ?int $ignoreId = null): string
     {
         $baseSlug = Str::slug($name);
-        $slug = $baseSlug;
+        $slug = $baseSlug !== '' ? $baseSlug : 'san-pham';
         $counter = 1;
 
         while (

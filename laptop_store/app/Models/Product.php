@@ -38,6 +38,11 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     public function getImageUrlAttribute(): string
     {
         if (!empty($this->image)) {
@@ -55,5 +60,16 @@ class Product extends Model
         }
 
         return asset('images/product-placeholder.svg');
+    }
+
+    public function getGalleryUrlsAttribute(): array
+    {
+        $urls = [$this->image_url];
+
+        foreach ($this->images as $image) {
+            $urls[] = $image->image_url;
+        }
+
+        return array_values(array_unique($urls));
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Brand;
+use Illuminate\Database\Seeder;
 
 class BrandSeeder extends Seeder
 {
@@ -11,29 +11,29 @@ class BrandSeeder extends Seeder
     {
         Brand::insert([
             [
-                'name' => 'Dell',
-                'description' => 'Laptop Dell chính hãng',
+                'name' => 'Apple',
+                'description' => 'Điện thoại iPhone chính hãng, thiết kế cao cấp và hiệu năng mạnh.',
                 'logo' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'HP',
-                'description' => 'Laptop HP chính hãng',
+                'name' => 'Samsung',
+                'description' => 'Điện thoại Samsung đa dạng phân khúc, màn hình đẹp và pin tốt.',
                 'logo' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Asus',
-                'description' => 'Laptop Asus chính hãng',
+                'name' => 'Xiaomi',
+                'description' => 'Điện thoại Xiaomi cấu hình tốt, giá hợp lý.',
                 'logo' => null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Lenovo',
-                'description' => 'Laptop Lenovo chính hãng',
+                'name' => 'OPPO',
+                'description' => 'Điện thoại OPPO nổi bật về thiết kế và camera selfie.',
                 'logo' => null,
                 'created_at' => now(),
                 'updated_at' => now(),

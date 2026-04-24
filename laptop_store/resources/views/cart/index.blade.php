@@ -20,7 +20,7 @@
             <div class="card-body text-center py-5">
                 <i class="bi bi-cart-x fs-1 text-muted"></i>
                 <h4 class="mt-3">Giỏ hàng đang trống</h4>
-                <p class="text-muted">Hãy thêm vài mẫu laptop bạn thích vào giỏ hàng.</p>
+                <p class="text-muted">Hãy thêm vài mẫu điện thoại bạn thích vào giỏ hàng.</p>
                 <a href="{{ route('products.index') }}" class="btn btn-warning">
                     Xem sản phẩm
                 </a>
@@ -144,12 +144,12 @@
                             <span class="fw-bold text-danger fs-5">{{ number_format($total, 0, ',', '.') }}đ</span>
                         </div>
 
-                        <button class="btn btn-warning w-100 btn-lg" disabled>
-                            Thanh toán (làm ở bước tiếp theo)
-                        </button>
+                        <a href="{{ route('orders.create') }}" class="btn btn-warning w-100 btn-lg">
+                            Tiến hành đặt hàng
+                        </a>
 
                         <p class="text-muted small mt-3 mb-0">
-                            Bước tiếp theo mình sẽ nối giỏ hàng này sang phần đặt hàng thật.
+                            Hệ thống đã nối giỏ hàng sang form đặt hàng thật và lưu đơn vào cơ sở dữ liệu.
                         </p>
                     </div>
                 </div>

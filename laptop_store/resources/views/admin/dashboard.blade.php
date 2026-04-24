@@ -7,12 +7,15 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h2 class="fw-bold mb-1">Trang quản trị Admin</h2>
-            <p class="text-muted mb-0">Quản lý sản phẩm và theo dõi tình hình cửa hàng.</p>
+            <p class="text-muted mb-0">Quản lý sản phẩm, đơn hàng và theo dõi tình hình cửa hàng điện thoại.</p>
         </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
             <a href="{{ route('admin.products.index') }}" class="btn btn-dark">
-                <i class="bi bi-box-seam me-1"></i> Quản lý sản phẩm
+                <i class="bi bi-phone me-1"></i> Quản lý sản phẩm
+            </a>
+            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-dark">
+                <i class="bi bi-receipt me-1"></i> Quản lý đơn hàng
             </a>
             <a href="{{ route('admin.products.create') }}" class="btn btn-warning">
                 <i class="bi bi-plus-circle me-1"></i> Thêm sản phẩm

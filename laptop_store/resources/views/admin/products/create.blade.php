@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="fw-bold mb-1">Thêm sản phẩm</h2>
-            <p class="text-muted mb-0">Chọn ảnh từ máy tính, hệ thống sẽ tự lưu file và lưu đường dẫn vào MySQL.</p>
+            <p class="text-muted mb-0">Mỗi sản phẩm có thể có 1 ảnh chính và tối đa 3 ảnh phụ.</p>
         </div>
         <a href="{{ route('admin.products.index') }}" class="btn btn-outline-dark">Quay lại danh sách</a>
     </div>
@@ -29,7 +29,9 @@
                         <select name="brand_id" class="form-select @error('brand_id') is-invalid @enderror">
                             <option value="">-- Chọn hãng --</option>
                             @foreach($brands as $brand)
-                                <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
+                                <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
+                                    {{ $brand->name }}
+                                </option>
                             @endforeach
                         </select>
                         @error('brand_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -78,7 +80,7 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label class="form-label">GPU</label>
+                        <label class="form-label">GPU / Camera</label>
                         <input type="text" name="gpu" class="form-control @error('gpu') is-invalid @enderror" value="{{ old('gpu') }}">
                         @error('gpu') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
@@ -96,10 +98,18 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Ảnh sản phẩm</label>
+                        <label class="form-label">Ảnh chính</label>
                         <input type="file" name="image" accept="image/*" class="form-control @error('image') is-invalid @enderror">
                         @error('image') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        <div class="form-text">Chấp nhận JPG, PNG, WEBP, GIF. Tối đa 2MB.</div>
+                        <div class="form-text">Ảnh đại diện để hiển thị ở danh sách sản phẩm.</div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Ảnh phụ (tối đa 3 ảnh)</label>
+                        <input type="file" name="images[]" accept="image/*" multiple class="form-control @error('images') is-invalid @enderror @error('images.*') is-invalid @enderror">
+                        @error('images') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        @error('images.*') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
+                        <div class="form-text">Có thể chọn cùng lúc 2 đến 3 ảnh để làm gallery.</div>
                     </div>
 
                     <div class="col-md-6 d-flex align-items-end">
